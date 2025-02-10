@@ -19,6 +19,12 @@ jobs:
         echo "Fetching GitHub Actions public IP..."
         echo "GITHUB_ACTIONS_IP=$(curl -s https://checkip.amazonaws.com)/32" >> $GITHUB_ENV
 
+    - name: Configure AWS credentials
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set region ${{ secrets.AWS_REGION }}
+
     - name: Temporarily Open SSH for GitHub Actions
       run: |
         echo "Opening SSH access for GitHub Actions IP: $GITHUB_ACTIONS_IP"
