@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: SSH into EC2 & Deploy
       uses: appleboy/ssh-action@master
       with:
@@ -20,8 +17,8 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          cd ~/myapp
+          cd /home/ubuntu/app
           git pull origin main
-          sudo systemctl restart nginx
-          docker build -t myapp || true
+          docker build -t myapp .
+          docker stop myapp || true
           docker run -d -p 5000:5000 --name myapp myapp
