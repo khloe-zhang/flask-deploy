@@ -13,6 +13,22 @@ jobs:
     - name: Checkout code  # 第一步：从 GitHub 拉取最新代码
       uses: actions/checkout@v3
 
+    - name: Get GitHub Actions IP (Optional)
+      id: ip
+      run: |
+        echo "Fetching GitHub Actions public IP..."
+        echo "GITHUB_ACTIONS_IP=$(curl -s https://checkip.amazonaws.com)/32" >> $GITHUB_ENV
+
+    - name: Temporarily Open SSH for GitHub Actions
+      run: |
+        echo "Opening SSH access for GitHub Actions IP: $GITHUB_ACTIONS_IP"
+        aws ec2 authorize-security-group-ingress \
+          --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+          --protocol tcp \
+          --port 22 \
+          --cidr $GITHUB_ACTIONS_IP \
+          --region ${{ secrets.AWS_REGION }}
+
     - name: SSH into EC2 & Deploy  # 第二步：使用 SSH 连接 EC2 并执行部署
       uses: appleboy/ssh-action@master
       with:
@@ -26,3 +42,14 @@ jobs:
           docker build -t myapp .          # 构建 Docker 镜像
           docker stop myapp || true        # 停止旧容器（如果存在）
           docker run -d -p 5000:5000 --name myapp myapp  # 运行新容器
+
+    - name: Close SSH Access after Deployment
+      if: always()
+      run: |
+        echo "Closing SSH access for GitHub Actions IP: $GITHUB_ACTIONS_IP"
+        aws ec2 revoke-security-group-ingress \
+          --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+          --protocol tcp \
+          --port 22 \
+          --cidr $GITHUB_ACTIONS_IP \
+          --region ${{ secrets.AWS_REGION }}
