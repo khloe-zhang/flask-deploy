@@ -1,24 +1,28 @@
-name: Deploy to AWS EC2
+name: Deploy to AWS EC2  # 定义 GitHub Actions 工作流名称
 
 on:
   push:
     branches:
-      - main
+      - main  # 监听 main 分支的 push 事件
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 选择 GitHub 提供的 Ubuntu 服务器运行任务
 
     steps:
-    - name: SSH into EC2 & Deploy
+    - name: Checkout code  # 第一步：从 GitHub 拉取最新代码
+      uses: actions/checkout@v3
+
+    - name: SSH into EC2 & Deploy  # 第二步：使用 SSH 连接 EC2 并执行部署
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_KEY }}
+        host: ${{ secrets.EC2_HOST }}   # EC2 服务器的公有 IP（存储在 GitHub Secrets）
+        username: ubuntu                # EC2 登录用户名
+        key: ${{ secrets.EC2_KEY }}     # SSH 私钥（存储在 GitHub Secrets）
         script: |
-          cd /home/ubuntu/app
-          git pull origin main
-          docker build -t myapp .
-          docker stop myapp || true
-          docker run -d -p 5000:5000 --name myapp myapp
+          cd ~/myapp                      # 进入 Flask 项目目录
+          git pull origin main             # 拉取 GitHub 最新代码
+          sudo systemctl restart nginx     # 重新启动 Nginx
+          docker build -t myapp .          # 构建 Docker 镜像
+          docker stop myapp || true        # 停止旧容器（如果存在）
+          docker run -d -p 5000:5000 --name myapp myapp  # 运行新容器
