@@ -25,3 +25,33 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+@app.route("/users", methods=["POST"])
+def create_user(): # 通过 JSON 请求创建新用户
+    data = request.get_json() # 这是在请求体中的 JSON 数据
+    new_user = User(name=data["name"], email=data["email"])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "New user created!"}), 201
+
+@app.route("/users", methods=["GET"])
+def get_users(): # 获取所有用户
+    users = User.query.all() 
+    return jsonify([{"id": user.id, "name": user.name, "email": user.email} for user in users])
+    # jsonify 的意思是将 Python 对象转换为 JSON 格式
+
+@app.route("/users/<int:id>", methods=["GET"])
+def get_user(id): # 通过 ID 获取用户
+    user = User.query.get(id)
+    if user:
+        return jsonify({"id": user.id, "name": user.name, "email": user.email})
+    return jsonify({"message": "User not found"}), 404
+
+@app.route("/users/<int:id>", methods=["DELETE"])
+def delete_user(id): # 通过 ID 删除用户
+    user = User.query.get(id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "User deleted successfully!"})
+    return jsonify({"message": "User not found"}), 404
