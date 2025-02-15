@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -22,9 +22,6 @@ with app.app_context():
 @app.route("/")
 def home():
     return "Hello, AWS CI/CD updated on Feb 15! 🚀 Now with Auto Deployment! Now Flask is connected to MySQL!"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
 
 @app.route("/users", methods=["POST"])
 def create_user(): # 通过 JSON 请求创建新用户
@@ -55,3 +52,10 @@ def delete_user(id): # 通过 ID 删除用户
         db.session.commit()
         return jsonify({"message": "User deleted successfully!"})
     return jsonify({"message": "User not found"}), 404
+
+
+
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
