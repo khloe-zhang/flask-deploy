@@ -57,6 +57,7 @@ jobs:
         username: ubuntu                # EC2 登录用户名
         key: ${{ secrets.EC2_KEY }}     # SSH 私钥（存储在 GitHub Secrets）
         script: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
           cd ~/myapp                      # 进入 Flask 项目目录
           docker-compose pull  # 拉取最新 Flask 镜像
 
