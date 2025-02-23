@@ -1,10 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
 
-# 配置 MySQL 数据库连接
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:yourpassword@localhost/flaskapp'
+# 使用环境变量 DATABASE_URI 让 Flask 连接 MySQL
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URI', 
+    'mysql+pymysql://flaskuser:yourpassword@mysql/flaskapp'  # 🚀 这里 `mysql` 是 `docker-compose` 里的 MySQL 容器名
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # 创建数据库对象
@@ -21,7 +25,7 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    return "Hello, AWS CI/CD updated on Feb 15! 🚀 Now with Auto Deployment! Now Flask is connected to MySQL!"
+    return "Hello, AWS CI/CD updated on Feb 15! 🚀 Now with Auto Deployment! Now Flask is connected to MySQL! Now have Docker compose!"
 
 @app.route("/users", methods=["POST"])
 def create_user(): # 通过 JSON 请求创建新用户
