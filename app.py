@@ -25,7 +25,7 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    return "Hello, AWS CI/CD updated on Feb 15! 🚀 Now with Auto Deployment! Now Flask is connected to MySQL! Now have Docker compose!"
+    return "Hello, AWS CI/CD updated on Feb 15! 🚀 Now with Auto Deployment! Now Flask is connected to MySQL! Now have Docker compose! Testing if security group works."
 
 @app.route("/users", methods=["POST"])
 def create_user(): # 通过 JSON 请求创建新用户
