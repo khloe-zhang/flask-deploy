@@ -68,3 +68,11 @@ jobs:
 
           docker-compose up -d  # 运行 Flask + MySQL
 
+    - name: Close SSH Access after Deployment
+      run: |
+        aws ec2 revoke-security-group-ingress \
+          --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+          --protocol tcp \
+          --port 22 \
+          --cidr $GITHUB_ACTIONS_IP \
+          --region ${{ secrets.AWS_REGION }}
