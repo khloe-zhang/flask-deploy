@@ -19,6 +19,7 @@ jobs:
           hugo-version: '0.111.3'  # 可指定你想用的 Hugo 版本
 
       - name: Build Hugo site
+        working-directory: frontend
         run: hugo -F --cleanDestinationDir
 
       - name: Login to DockerHub
