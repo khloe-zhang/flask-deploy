@@ -1,0 +1,50 @@
+name: Hugo Docker Build & Deploy
+
+on:
+  push:
+    branches:
+      - main  # 监听 main 分支推送，可根据需要改分支名
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.111.3'  # 可指定你想用的 Hugo 版本
+
+      - name: Build Hugo site
+        run: hugo -F --cleanDestinationDir
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -f Dockerfile.hugo -t ${{ secrets.DOCKER_HUB_USERNAME }}/hugo-site:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/hugo-site:latest
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to server via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/hugo-site:latest
+            docker stop hugo-site || true
+            docker rm hugo-site || true
+            docker run -d --name hugo-site -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/hugo-site:latest
+          EOF
